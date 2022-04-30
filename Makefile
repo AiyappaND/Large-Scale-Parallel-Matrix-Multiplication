@@ -10,7 +10,8 @@ maven.jar.name=spark-vh-1.0.jar
 # Change job name depending on which method to run
 job.name=vh.VH
 local.master=local[4]
-local.input=input
+local.matrix_a=input/a_matrix.csv
+local.matrix_b=input/b_matrix.csv
 local.output=output
 # Pseudo-Cluster Execution
 hdfs.user.name=aiyappa
@@ -37,7 +38,7 @@ clean-local-output:
 
 # Runs standalone
 local: jar clean-local-output
-	spark-submit --class ${job.name} --master ${local.master} --name "${app.name}" ${jar.name} ${local.input} ${local.output}
+	spark-submit --class ${job.name} --master ${local.master} --name "${app.name}" ${jar.name} ${local.matrix_a} ${local.matrix_b} ${local.output}
 
 # Start HDFS
 start-hdfs:
