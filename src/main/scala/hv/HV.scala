@@ -49,27 +49,6 @@ object HV {
 
     val result = joined.reduceByKey(_+_)
 
-
-
-    // // VERSION 2
-
-    // def dot_product(row_list:List[(Int, Int, Int)], col_list:List[(Int, Int, Int)]) : Int = {
-    //   val len = row_list.length
-    //   var result = 0
-
-    //   for( index <- 0 until len) {
-    //     result += row_list(index)._3 * col_list(index)._3
-    //   }
-    //   result
-    // }
-
-    // val result = horizontal_p_a.cartesian(vertical_p_b).map {
-    //   case ((rowA, iter_rows), (colB, iter_cols)) => ((rowA, colB), dot_product(iter_rows.toList, iter_cols.toList))
-    // }
-
-
-
-
     result.saveAsTextFile(args(2))
 
   }
