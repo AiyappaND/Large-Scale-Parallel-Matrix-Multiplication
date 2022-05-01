@@ -2,13 +2,13 @@
 
 # Customize these paths for your environment.
 # -----------------------------------------------------------
-spark.root=/opt/spark
-hadoop.root=/opt/hadoop
+spark.root=/home/alina/Downloads/spark
+hadoop.root=/home/alina/Downloads/hadoop
 app.name=Dense Matrix Multiplication
 jar.name=spark-vh.jar
 maven.jar.name=spark-vh-1.0.jar
 # Change job name depending on which method to run
-job.name=vh.HV
+job.name=hv.HV
 local.master=local[4]
 local.matrix_a=input/a_matrix.csv
 local.matrix_b=input/b_matrix.csv
