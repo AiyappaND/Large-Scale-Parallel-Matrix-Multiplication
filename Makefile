@@ -2,28 +2,32 @@
 
 # Customize these paths for your environment.
 # -----------------------------------------------------------
-spark.root=/home/alina/Downloads/spark
-hadoop.root=/home/alina/Downloads/hadoop
+spark.root=/opt/spark
+hadoop.root=/opt/hadoop
 app.name=Dense Matrix Multiplication
 jar.name=spark-vh.jar
 maven.jar.name=spark-vh-1.0.jar
 # Change job name depending on which method to run
 job.name=hv.HV
 local.master=local[4]
+local.input = input
 local.matrix_a=input/a_matrix.csv
 local.matrix_b=input/b_matrix.csv
 local.output=output
 # Pseudo-Cluster Execution
 hdfs.user.name=aiyappa
-hdfs.input=input
+hdfs.matrix_a=input/a_matrix.csv
+hdfs.matrix_b=input/b_matrix.csv
 hdfs.output=output
 # AWS EMR Execution
 aws.emr.release=emr-6.5.0
 aws.bucket.name=spark-aiyappabucket
 aws.input=input
+aws.matrix_a=input/a_matrix.csv
+aws.matrix_b=input/b_matrix.csv
 aws.output=output
 aws.log.dir=log
-aws.num.nodes=8
+aws.num.nodes=4
 aws.instance.type=m4.large
 # -----------------------------------------------------------
 
@@ -85,12 +89,12 @@ download-output-hdfs:
 # Make sure Hadoop  is set up (in /etc/hadoop files) for pseudo-clustered operation (not standalone).
 # https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation
 pseudo: jar stop-yarn format-hdfs init-hdfs upload-input-hdfs start-yarn clean-local-output
-	spark-submit --class ${job.name} --master yarn --deploy-mode cluster ${jar.name} ${local.input} ${local.output}
+	spark-submit --class ${job.name} --master yarn --deploy-mode cluster ${jar.name} ${local.matrix_a} ${local.matrix_b} ${local.output}
 	make download-output-hdfs
 
 # Runs pseudo-clustered (quickie).
 pseudoq: jar clean-local-output clean-hdfs-output
-	spark-submit --class ${job.name} --master yarn --deploy-mode cluster ${jar.name} ${local.input} ${local.output}
+	spark-submit --class ${job.name} --master yarn --deploy-mode cluster ${jar.name} ${local.matrix_a} ${local.matrix_b} ${local.output}
 	make download-output-hdfs
 
 # Create S3 bucket.
@@ -112,11 +116,11 @@ upload-app-aws:
 # Main EMR launch.
 aws: jar upload-app-aws delete-output-aws
 	aws emr create-cluster \
-		--name "Twitter Follower Count Spark Cluster" \
+		--name "Dense Matrix Multiplication ${job.name}" \
 		--release-label ${aws.emr.release} \
 		--instance-groups '[{"InstanceCount":${aws.num.nodes},"InstanceGroupType":"CORE","InstanceType":"${aws.instance.type}"},{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"${aws.instance.type}"}]' \
 	    --applications Name=Hadoop Name=Spark \
-		--steps Type=CUSTOM_JAR,Name="${app.name}",Jar="command-runner.jar",ActionOnFailure=TERMINATE_CLUSTER,Args=["spark-submit","--deploy-mode","cluster","--class","${job.name}","s3://${aws.bucket.name}/${jar.name}","s3://${aws.bucket.name}/${aws.input}","s3://${aws.bucket.name}/${aws.output}"] \
+		--steps Type=CUSTOM_JAR,Name="${app.name}",Jar="command-runner.jar",ActionOnFailure=TERMINATE_CLUSTER,Args=["spark-submit","--deploy-mode","cluster","--class","${job.name}","s3://${aws.bucket.name}/${jar.name}","s3://${aws.bucket.name}/${aws.matrix_a}","s3://${aws.bucket.name}/${aws.matrix_b}","s3://${aws.bucket.name}/${aws.output}"] \
 		--log-uri s3://${aws.bucket.name}/${aws.log.dir} \
 		--use-default-roles \
 		--enable-debugging \
@@ -124,8 +128,13 @@ aws: jar upload-app-aws delete-output-aws
 
 # Download output from S3.
 download-output-aws: clean-local-output
-	mkdir ${local.output}
-	aws s3 sync s3://${aws.bucket.name}/${aws.output} ${local.output}
+	mkdir aws-output
+	aws s3 sync s3://${aws.bucket.name}/${aws.output} aws-output
+
+# Download output from S3.
+download-logs-aws: clean-local-output
+	mkdir aws-logs
+	aws s3 sync s3://${aws.bucket.name}/${aws.log.dir} aws-logs
 
 # Change to standalone mode.
 switch-standalone:

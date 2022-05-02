@@ -25,18 +25,18 @@ object HV {
     val matrix_b = sc.textFile(args(1)).map(
       cell => (cell.split(",")(0).toInt, cell.split(",")(1).toInt, cell.split(",")(2).toInt))
 
-    //partition A horizontally, group by row, sort by column number, then only keep the cell value
+    // Partition A horizontally, group by row, sort by column number, then only keep the cell value
     val horizontal_p_a = matrix_a.map(cell_a => (cell_a._1, cell_a))
                         .groupByKey()
                         .mapValues(v => v.to[ListBuffer].sortBy(_._2).map(_._3)) // [(0,1,10), (0,2,5), (0,0,4)] becomes [4,10,5]
 
-    //partition B vertically, group by column, sort by row number, then only keep the cell value
+    // Partition B vertically, group by column, sort by row number, then only keep the cell value
     val vertical_p_b = matrix_b.map(cell_b => (cell_b._2, cell_b))
                               .groupByKey()
                               .mapValues(v => v.to[ListBuffer].sortBy(_._1).map(_._3))
 
   
-    //join every row of A with every column of B and then compute the dot product
+    // Join every row of A with every column of B and then compute the dot product
     val joined = horizontal_p_a.cartesian(vertical_p_b).flatMap {
       case ((rowA, iter_rows), (colB, iter_cols)) => 
 
@@ -46,8 +46,10 @@ object HV {
         }
     }
 
+    // Sum up dot product results for each cell of the matrix
     val result = joined.reduceByKey(_+_)
 
+    // Save result to text file
     result.saveAsTextFile(args(2))
 
   }

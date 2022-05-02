@@ -6,11 +6,11 @@ import random
 path_to_a = "a_matrix.csv"
 path_to_b = "b_matrix.csv"
 
-row_a = 3
-col_a = 2
+row_a = 1000
+col_a = 1000
 
-row_b = 2
-col_b = 2
+row_b = 1000
+col_b = 1000
 
 with open("input/" + path_to_a, "w") as csv_file1:
         writer = csv.writer(csv_file1, delimiter=',')
