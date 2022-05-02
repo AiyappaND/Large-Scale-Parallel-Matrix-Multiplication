@@ -6,3 +6,6 @@ target/
 output/
 .idea/
 log/
+config/
+input/
+pom.xml
